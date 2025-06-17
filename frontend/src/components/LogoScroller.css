@@ -1,0 +1,70 @@
+/* Make the full carousel stretch across the screen */
+.scroller {
+  max-width: 1800px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 0;
+  background: #ffffff;
+}
+
+.scroller__inner {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2rem;
+  width: max-content;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+/* Enable animation when data-animated is true */
+.scroller[data-animated="true"] {
+  -webkit-mask: linear-gradient(
+    90deg,
+    transparent,
+    white 10%,
+    white 90%,
+    transparent
+  );
+  mask: linear-gradient(
+    90deg,
+    transparent,
+    white 10%,
+    white 90%,
+    transparent
+  );
+}
+
+/* Animate the inner track */
+.scroller[data-animated="true"] .scroller__inner {
+  animation: scroll var(--_animation-duration, 40s)
+    var(--_animation-direction, forwards) linear infinite;
+}
+
+.scroller[data-direction="left"] {
+  --_animation-direction: forwards;
+}
+
+.scroller[data-speed="slow"] {
+  --_animation-duration: 60s;
+}
+
+/* Keyframes for infinite scroll */
+@keyframes scroll {
+  to {
+    transform: translateX(calc(-50% - 1rem));
+  }
+}
+
+/* Logo styling */
+.scroller__inner img {
+  height: 130px;
+  filter: grayscale(100%);
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.scroller__inner img:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+}
