@@ -2,49 +2,72 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import OrderProducts from './pages/OrderProducts';
 import Registration from './pages/Registration';
+import CartPage from './pages/CartPage';
 import PublicRoute from './components/PublicRoute';
+import ProtectedRoute from './components/ProtectedRoute';
+import { CartProvider } from './context/CartContext';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) {
       setUser(JSON.parse(stored));
     }
+    setLoading(false);
   }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Home is public — anyone can access it */}
-        <Route
-          path="/"
-          element={<Home user={user} setUser={setUser} />}
-        />
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          
+          <Route
+            path="/"
+            element={<Home user={user} setUser={setUser} />}
+          />
 
-        {/* Login is restricted for logged-in users */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute user={user}>
-              <Login setUser={setUser} />
-            </PublicRoute>
-          }
-        />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute user={user}>
+                <Login setUser={setUser} />
+              </PublicRoute>
+            }
+          />
 
-        {/* Registration is restricted for logged-in users */}
-        <Route
-          path="/registration"
-          element={
-            <PublicRoute user={user}>
-              <Registration setUser={setUser} />
-            </PublicRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+          <Route
+            path="/registration"
+            element={
+              <PublicRoute user={user}>
+                <Registration setUser={setUser} />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/products"
+            element={
+              <ProtectedRoute user={user} loading={loading}>
+                <OrderProducts user={user} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute user={user} loading={loading}>
+                <CartPage user={user} />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 
