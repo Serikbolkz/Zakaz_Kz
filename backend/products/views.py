@@ -4,11 +4,12 @@ import jwt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import B2BUser
-from .serializers import B2BUserSerializer
+from .models import B2BUser, Order, OrderItem, Product
+from .serializers import B2BUserSerializer, OrderSerializer, OrderCreateSerializer
 from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings
 from datetime import datetime, timedelta
+from django.shortcuts import get_object_or_404
 
 @api_view(['POST'])
 def login_view(request):
@@ -35,6 +36,7 @@ def login_view(request):
             "message": "Успешный вход",
             "token": token,
             "user": {
+                "id": user.id,
                 "login": user.login,
                 "full_name": user.full_name,
                 "email": user.email,
@@ -63,3 +65,39 @@ def registration_view(request):
         serializer.save()
         return Response({"message": "Регистрация прошла успешно"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def place_order(request):
+    serializer = OrderCreateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    user_id = serializer.validated_data['user_id']
+    order_date = serializer.validated_data['order_date']
+    cart_items = serializer.validated_data['cart_items']
+
+    user = get_object_or_404(B2BUser, id=user_id)
+
+    # Calculate total
+    total = sum(item['price'] * item['quantity'] for item in cart_items)
+
+    # Create Order
+    order = Order.objects.create(
+        user=user,
+        order_date=order_date,
+        total_price=total
+    )
+
+    # Create OrderItems
+    for item in cart_items:
+        product = get_object_or_404(Product, id=item['id'])
+        quantity = item['quantity']
+        OrderItem.objects.create(
+            order=order,
+            product=product,
+            quantity=quantity,
+            item_price=product.price * quantity
+        )
+
+    response_serializer = OrderSerializer(order)
+    return Response(response_serializer.data, status=status.HTTP_201_CREATED)

@@ -2,13 +2,16 @@ import React from 'react';
 import './Home.css';
 import LogoScroller from '../components/LogoScroller';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+
 
 const Home = ({ user, setUser }) => {
     const navigate = useNavigate();
-
+    const { clearCart } = useCart();
     const handleLogout = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+        clearCart();
         if (setUser) setUser(null);
         navigate('/');
     };
@@ -28,16 +31,16 @@ const Home = ({ user, setUser }) => {
                     <a href="#benefits">Benefits</a>
                 </div>
                 <div className="nav-right">
-                {user ? (
-                    <div className="auth-info">
-                        <span className="username">Привет, {user.login}!</span>
-                        <button className="login-button" onClick= {handleLogout}>
-                            Выйти
-                        </button>
-                    </div>
-                ) : (
-                    <Link to="/login" className="login-button">Войти</Link>
-                )}
+                    {user ? (
+                        <div className="auth-info">
+                            <Link to="/products" className="order-button">Заказать продукты</Link>
+                            <button className="login-button" onClick= {handleLogout}>
+                                Выйти
+                            </button>
+                        </div>
+                    ) : (
+                        <Link to="/login" className="login-button">Войти</Link>
+                    )}
                 </div>
             </header>
 
